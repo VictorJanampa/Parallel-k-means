@@ -13,7 +13,7 @@
 #include <map>
 #include <string>
 
-/*Se inicializa las variables que seran compartidas a todos los nodos*/
+/*En esta clase se inicializan las variables de worker, las cuales serán compartidas a todos los nodos correspondientes */
 Worker::Worker(int rank, MPI_Comm comm) : rank(rank), comm(comm), notChanged(1)
 {
 
@@ -29,13 +29,13 @@ Worker::Worker(int rank, MPI_Comm comm) : rank(rank), comm(comm), notChanged(1)
     omp_total_time = 0.0;
 }
 
-/* parte del calculo para obtener la distancia euclidiana */
-double Worker::squared_norm(Point p1, Point p2)
+/* Aqui se realiza el cálculo de la distancia euclidiana */
+double Worker::squared_norm(Point p1, Point p2) /* recibe como entrada 2 puntos a considerar */
 {
     double sum = 0.0;
     for (int j = 0; j < total_values; j++)
     {
-        sum += pow(p1.values[j] - p2.values[j], 2.0);
+        sum += pow(p1.values[j] - p2.values[j], 2.0); /*Calculo de la distancia, se realiza una sumatoria para todos los valores*/
     }
     return sum;
 }
@@ -45,14 +45,13 @@ void Worker::setLastIteration(int lastIt)
     lastIteration = lastIt;
 }
 
-/* utilizando la clase FileManager creamos el archivo csv que contiene todos los puntos que representa los pixeles de una imagen
-    y definimos los parametros de la cantidad de clusters (centroides) y la maxima cantidad de iteraciones
-    esta opeacion solo se realiza en el nodo 0
+/* La clase FileManager se un archivo csv que contiene todos los puntos que representa los pixeles de una imagen y
+se define la cantidad de clusters y la maxima cantidad de iteraciones (Esto se realiza solo en el nodo 0).*/
 
-*/
 void Worker::createDataset(std::string FileImg,int numClusters,int maxIteration)
+/*se definen las variables cantidad de clusters y la maxima cantidad de iteraciones*/
 {
-    if (rank == 0)
+    if (rank == 0) /*Esto se realiza solo en el nodo 0*/
     {
         imgFilename = FileImg;
         std::string answer;
@@ -78,13 +77,12 @@ void Worker::createDataset(std::string FileImg,int numClusters,int maxIteration)
 }
 
 /*
-    la funcion readDataset permite leer el archivo csv que contiene los puntos totales
-    esta opeacion solo se realiza en el nodo 0
+    Permite leer el archivo csv que contiene los puntos de la imagen, esto solo se realiza en el nodo 0
 */
 void Worker::readDataset()
 {
 
-    if (rank == 0)
+    if (rank == 0)  /*lectura del archivo en el rank 0*/
     {
         std::string filename, point_dimension;
 
@@ -101,7 +99,7 @@ void Worker::readDataset()
 
         int count = 0;
         int num = 0;
-        while (getline(infile, line, '\n'))
+        while (getline(infile, line, '\n')) /*para el resto de ranks se obtiene las coordenadas de los puntos de la imagen*/
         {
             if (count == 0)
             {
@@ -139,8 +137,8 @@ void Worker::readDataset()
 }
 
 /*
-    Se realiza un scatter de los puntos totales  (numPoints / numNodes)  a cada nodo de acuerdo a la cantidad de procesadores 
-    tambien se realiza un broadcast de la maxima cantidad de iteraciones, y la cantidad de puntos totales.
+    Realiza un Scatter de los puntos totales (numPoints / numNodes) a cada nodo de acuerdo a la cantidad de procesadores
+    y se realiza un Bcast de la maxima cantidad de iteraciones, y la cantidad de puntos totales.
 */
 void Worker::scatterDataset()
 {
@@ -186,7 +184,7 @@ void Worker::scatterDataset()
         }
     }
 
-    MPI_Scatter(pointsPerNode, 1, MPI_INT, &num_local_points, 1, MPI_INT, 0, comm);
+    MPI_Scatter(pointsPerNode, 1, MPI_INT, &num_local_points, 1, MPI_INT, 0, comm); /*Realiza el scater sobre todos los nodos*/
 
     localDataset.resize(num_local_points);
 
@@ -195,7 +193,7 @@ void Worker::scatterDataset()
                  pointType, 0, comm);
 
     //Send the dimension of points to each node
-    MPI_Bcast(&total_values, 1, MPI_INT, 0, comm);
+    MPI_Bcast(&total_values, 1, MPI_INT, 0, comm); 
 
     memberships.resize(num_local_points);
 
@@ -203,7 +201,7 @@ void Worker::scatterDataset()
     {
         memberships[i] = -1;
     }
-
+    /*envia la dimensión de los puntos a cada nodo*/
     MPI_Bcast(&numPoints, 1, MPI_INT, 0, comm);
     MPI_Bcast(&max_iterations, 1, MPI_INT, 0, comm);
 
@@ -212,7 +210,7 @@ void Worker::scatterDataset()
 }
 
 
-/*la funcion extractCluster crea los centroides (clusters) y realiza  un broadcast de los centroides y la cantidad de centroides*/
+/*Crea los clusters y realiza un Bcast de los centroides y la cantidad de centroides*/
 void Worker::extractCluster()
 {
 
@@ -260,12 +258,12 @@ void Worker::extractCluster()
 
     double start_ = MPI_Wtime();
 
-    //Send the number of clusters in broadcast
+    //Bcast del número de cluster
     MPI_Bcast(&K, 1, MPI_INT, 0, comm);
 
     clusters.resize(K);
 
-    //Send the clusters centroids values
+    //Envia los valores de los centroides
     MPI_Bcast(clusters.data(), K, pointType, 0, comm);
 
     double end = MPI_Wtime();
@@ -276,7 +274,7 @@ void Worker::extractCluster()
     }
 }
 
-/* la funcion getIdNearstCluster permite obtener el cluster de cada punto para esto se utilizo la distancia euclidiana hacia los centroides*/
+/* Permite obtener el cluster de cada punto para esto se utilizo la distancia euclidiana hacia los centroides*/
 int Worker::getIdNearestCluster(Point p)
 {
     int idCluster = 0; 
