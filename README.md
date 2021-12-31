@@ -104,4 +104,58 @@ for (int k = 1; k < K; k++) -->se obtiene la distancia euclidiana del resto de c
 }
 ```
 
+### Run 📋
+
+Asigna el cluster de todos los puntos que tienen un nodo y hace un all reduce para calcular el nuevo  valor de los centroides.
+
+```
+#pragma omp parallel for shared(memCounter)
+    for (int i = 0; i < localDataset.size(); i++) --> Se hace un for compartido para actualizar menCounter 
+
+
+#pragma omp atomic update
+            memCounter[new_mem]++; --> se declara esta operacion como atomica para evitar bloquear todo el vector, mutex de una posision en el Array
+
+
+MPI_Allreduce(memCounter, resMemCounter, K, MPI_INT, MPI_SUM, comm); --> Recogemos el numero de puntos que pertenecen a cada cluster
+
+
+#pragma omp parallel for  shared(reduceArr) 
+    for (int i = 0; i < K; i++)
+    {
+        for (int j = 0; j < total_values; j++) --> Se hace un for compartido para actualizar los datos
+        
+
+MPI_Allreduce(reduceArr, reduceResults, K * total_values, MPI_DOUBLE, MPI_SUM,comm); --> Recogemos los elementos de todos los clusters
+
+
+MPI_Allreduce(&notChanged, &globalNotChanged, 1, MPI_INT, MPI_SUM, comm); --> recogemos el valor de cambio
+```
+
+### UpdateLocalSum 📋
+
+Permite realizar la sumatoria local  de las distancias de cada cluster para facilitar la obtencion de los centroides.
+
+```
+for (int i = 0; i < localDataset.size(); i++)
+    {
+        for (int j = 0; j < total_values; j++)
+        {
+            localSum[memberships[i]].values[j] += localDataset[i].values[j];
+        }
+    }
+```
+
+### ComputeGlobalMembership 📋
+
+Une todos los puntos distribuidos, es decir, obtener el cluster de todos los puntos.
+
+```
+MPI_Reduce(&localMem, &globalMember, numPoints, MPI_INT, MPI_SUM, 0, comm);
+```
+
+### WriteClusterMembership 📋
+
+Crea un archivo csv que contiene los datos de cada cluster y crea la imagen segmentada
+
 
