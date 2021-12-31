@@ -22,7 +22,7 @@ void FileManager::createPointsFile(){
         for(int j=0 ;j < imgOriginal.getWidth(); j++){
             std::vector<u_int8_t> pixel = imgOriginal.getPixel(j,i); /*se extraen las coordenadas de cada pixel que representa a la imagen*/
             for(int n = 0;n < pointDimension;n++){ /*se hace de manera iterativa, de acuerdo a las dimensiones de la imagen*/
-                myfile << (int)pixel[n] ;
+                myfile << (int)pixel[n] ; /*se guarda todos estos puntos en el documento csv para usarlos durante la clasificación k-means en los nodos*/
                 if(n < pointDimension-1){
                     myfile << ",";
                 }
