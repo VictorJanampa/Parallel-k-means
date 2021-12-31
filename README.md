@@ -2,11 +2,11 @@
 
 #compile
 
-gcc -Wall -fopenmp -o omp.out main_omp.c utils/image_io.c utils/segmentation_omp.c -lm
+mpic++ -fopenmp -o main main.cpp Worker.cpp jpeg.cpp FileManager.cpp -ljpeg
 
 #run
 
-.\omp.out -k 4 -t 4 imgs/large.jpg
+mpirun -np 4 ./main 4 10 data/test.jpg
 
 
 ## Documentación de Algoritmo K-means 🚀
