@@ -3,7 +3,7 @@
 #include "jpeg.h"
 
 FileManager::FileManager( int numClusters, int maxIteration, std::string filename,std::string fileimg) {
-    marengo::jpeg::Image imgOriginal("data/test.jpg");
+    marengo::jpeg::Image imgOriginal(fileimg);
     this->numPoints = imgOriginal.getWidth() * imgOriginal.getHeight();
     this->pointDimension = imgOriginal.getPixelSize();
     this->numClusters = numClusters;
@@ -15,7 +15,7 @@ FileManager::FileManager( int numClusters, int maxIteration, std::string filenam
 void FileManager::createPointsFile(){
     srand(time(NULL));
     std::ofstream myfile;
-    marengo::jpeg::Image imgOriginal("data/test.jpg");
+    marengo::jpeg::Image imgOriginal(fileimg);
     myfile.open("data/" + filename + ".csv");
     myfile << pointDimension << "," << numClusters << "," << maxIteration << "\n";
     for(int i = 0; i < imgOriginal.getHeight(); i++){
@@ -34,4 +34,3 @@ void FileManager::createPointsFile(){
     }
     myfile.close();
 }
-
