@@ -99,7 +99,7 @@ void Worker::readDataset()
 
         int count = 0;
         int num = 0;
-        while (getline(infile, line, '\n')) /*para el resto de ranks se obtiene las coordenadas de los puntos de la imagen*/
+        while (getline(infile, line, '\n'))
         {
             if (count == 0)
             {
