@@ -20,8 +20,8 @@ void FileManager::createPointsFile(){
     myfile << pointDimension << "," << numClusters << "," << maxIteration << "\n";
     for(int i = 0; i < imgOriginal.getHeight(); i++){
         for(int j=0 ;j < imgOriginal.getWidth(); j++){
-            std::vector<u_int8_t> pixel = imgOriginal.getPixel(j,i);
-            for(int n = 0;n < pointDimension;n++){
+            std::vector<u_int8_t> pixel = imgOriginal.getPixel(j,i); /*se extraen las coordenadas de cada pixel que representa a la imagen*/
+            for(int n = 0;n < pointDimension;n++){ /*se hace de manera iterativa, de acuerdo a las dimensiones de la imagen*/
                 myfile << (int)pixel[n] ;
                 if(n < pointDimension-1){
                     myfile << ",";
